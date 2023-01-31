@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Platform event to publish errors that may occur in the HOVER integration</description>
+    <eventType>HighVolume</eventType>
+    <label>HOVER Exception</label>
+    <pluralLabel>HOVER Exceptions</pluralLabel>
+    <publishBehavior>PublishImmediately</publishBehavior>
+</CustomObject>

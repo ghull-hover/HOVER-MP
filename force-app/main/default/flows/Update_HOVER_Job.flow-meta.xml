@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Verify_Webhook</name>
+        <label>Verify Webhook</label>
+        <locationX>842</locationX>
+        <locationY>408</locationY>
+        <actionName>HoverVerifyWebhookConfig</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>verificationCode</name>
+            <value>
+                <elementReference>$Record.Verification_Code__c</elementReference>
+            </value>
+        </inputParameters>
+    </actionCalls>
+    <apiVersion>54.0</apiVersion>
+    <decisions>
+        <description>Additional automation once the Job is complete (e.g., get the measurements)</description>
+        <name>Is_Job_Complete</name>
+        <label>Is Job Complete</label>
+        <locationX>182</locationX>
+        <locationY>528</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Complete</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.State__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>complete</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Publish_Job_Complete_Event</targetReference>
+            </connector>
+            <label>Complete</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>Determine the type of webhook event (job update, connect update, webhook verification, etc) to process appropriately.</description>
+        <name>Webhook_Event_Type</name>
+        <label>Webhook Event Type</label>
+        <locationX>644</locationX>
+        <locationY>288</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Job_Update</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Event__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>job-state-changed</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Job</targetReference>
+            </connector>
+            <label>Job Update</label>
+        </rules>
+        <rules>
+            <name>Connect_Update</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Event__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>capture-request-state-changed</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Connect</targetReference>
+            </connector>
+            <label>Connect Update</label>
+        </rules>
+        <rules>
+            <name>Webhook_Verification</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Event__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>webhook-verification-code</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Verify_Webhook</targetReference>
+            </connector>
+            <label>Webhook Verification</label>
+        </rules>
+    </decisions>
+    <description>Process HOVER Webhooks to update the HOVER Job status and other webhook notifications (connect, webhook verification, etc). On complete, raise the &quot;Job Complete&quot; platform event (by default, this will trigger measurement retrieval).</description>
+    <interviewLabel>Update HOVER Job {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Update HOVER Job</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <description>Let the system know a HOVER Job has been completed</description>
+        <name>Publish_Job_Complete_Event</name>
+        <label>Publish Job Complete Event</label>
+        <locationX>50</locationX>
+        <locationY>648</locationY>
+        <inputAssignments>
+            <field>HOVER_Job_ID__c</field>
+            <value>
+                <elementReference>$Record.Job_ID__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>SF_Record_ID__c</field>
+            <value>
+                <elementReference>$Record.HOVER_Job_ID__r.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <object>HOVER_Job_Complete__e</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordUpdates>
+        <name>Update_Connect</name>
+        <label>Update Connect</label>
+        <locationX>578</locationX>
+        <locationY>408</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Job_External_Identifier__c</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Connect_Status__c</field>
+            <value>
+                <elementReference>$Record.State__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>HOVER_Job__c</object>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Updates the Jo&apos;s state based on the webhook notification</description>
+        <name>Update_Job</name>
+        <label>Update Job</label>
+        <locationX>182</locationX>
+        <locationY>408</locationY>
+        <connector>
+            <targetReference>Is_Job_Complete</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.HOVER_Job_ID__c</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>State__c</field>
+            <value>
+                <elementReference>$Record.State__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>HOVER_Job__c</object>
+    </recordUpdates>
+    <start>
+        <locationX>881</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Webhook_Event_Type</targetReference>
+        </connector>
+        <object>HOVER_Webhook__c</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <scheduledPaths>
+            <pathType>AsyncAfterCommit</pathType>
+        </scheduledPaths>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

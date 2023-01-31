@@ -1,12 +1,24 @@
 {
-  "packageDirectories": [
-    {
-      "path": "force-app",
-      "default": true
+    "packageDirectories": [
+        {
+            "path": "force-app",
+            "default": true,
+            "package": "HOVER",
+            "versionName": "ver 0.1",
+            "versionNumber": "0.1.0.NEXT"
+        }
+    ],
+    "name": "HOVER-MP",
+    "namespace": "HOVER4SF",
+    "sfdcLoginUrl": "https://login.salesforce.com",
+    "sourceApiVersion": "56.0",
+    "packageAliases": {
+        "HOVER": "0HoDn000000blvaKAA",
+        "HOVER@0.1.0-1": "04tDn000000AS9XIAW",
+        "HOVER@0.1.0-2": "04tDn000000AS9cIAG",
+        "HOVER@0.1.0-3": "04tDn000000AS9hIAG",
+        "HOVER@0.1.0-4": "04tDn000000AS9mIAG",
+        "HOVER@0.1.0-5": "04tDn000000AWbWIAW",
+        "HOVER@0.1.0-6": "04tDn000000AWfjIAG"
     }
-  ],
-  "name": "HOVER-MP",
-  "namespace": "HOVER4SF",
-  "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "56.0"
 }
