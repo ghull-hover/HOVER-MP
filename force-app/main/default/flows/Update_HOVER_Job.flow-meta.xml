@@ -27,7 +27,7 @@
             <name>Complete</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>$Record.State__c</leftValueReference>
+                <leftValueReference>$Record.HOVER4SF__State__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>complete</stringValue>
@@ -50,7 +50,7 @@
             <name>Job_Update</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>$Record.Event__c</leftValueReference>
+                <leftValueReference>$Record.HOVER4SF__Event__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>job-state-changed</stringValue>
@@ -65,7 +65,7 @@
             <name>Connect_Update</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>$Record.Event__c</leftValueReference>
+                <leftValueReference>$Record.HOVER4SF__Event__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>capture-request-state-changed</stringValue>
@@ -80,7 +80,7 @@
             <name>Webhook_Verification</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>$Record.Event__c</leftValueReference>
+                <leftValueReference>$Record.HOVER4SF__Event__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>webhook-verification-code</stringValue>
@@ -93,6 +93,7 @@
         </rules>
     </decisions>
     <description>Process HOVER Webhooks to update the HOVER Job status and other webhook notifications (connect, webhook verification, etc). On complete, raise the &quot;Job Complete&quot; platform event (by default, this will trigger measurement retrieval).</description>
+    <environments>Default</environments>
     <interviewLabel>Update HOVER Job {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Update HOVER Job</label>
     <processMetadataValues>
