@@ -4,7 +4,7 @@
             "path": "force-app",
             "default": true,
             "package": "HOVER",
-            "versionName": "ver 0.1",
+            "versionName": "ver 1.0",
             "versionNumber": "0.1.0.NEXT"
         }
     ],
