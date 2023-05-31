@@ -74,13 +74,15 @@ public class Hover {
 
         return (response);            
     }
+   
+
 
     @future (callout=true)
     public static void setSuborgAssigneeID(String jobID, String currentUserID, String email) {
         System.debug('Setting Suborg Assignee ID...');
         String emailEncoded = EncodingUtil.urlEncode(email, 'UTF-8');
+        
 
-    
         String api = '/api/v1/users?current_user_id=' + currentUserID + 'page=1&search=' + emailEncoded + '&sort_by=last_name&sort_order=asc';
         String contentType = 'application/json';
 		HttpResponse response = Hover.executeGET(api, contentType);
@@ -103,9 +105,15 @@ public class Hover {
                 String assigneeID =  String.valueOf(user.get('id'));
                 System.debug ('suborg Assignee ID: ' + assigneeID);
                 System.debug('HOVER Job ID: ' + jobID);
-                HOVER_Job__c aJob = [select ID from HOVER_Job__c where HOVER_Job_ID__c = :jobID LIMIT 1];
-                aJob.Suborg_Assignee_ID__c = assigneeID;
-                update aJob;
+                if (Schema.sObjectType.HOVER4SF__HOVER_Job__c.isUpdateable()){
+                    System.debug('Object is Updatable');
+                	HOVER_Job__c aJob = [select ID from HOVER_Job__c where HOVER_Job_ID__c = :jobID LIMIT 1];
+                	aJob.Suborg_Assignee_ID__c = assigneeID;
+                	update aJob;
+                } 
+                else{
+                    System.debug('HOVER_Job__c cannot be updated. Check user permissions and try again');
+                }
     
             }
             else {
@@ -219,10 +227,15 @@ public class Hover {
             System.debug(job);
             String hoverJobID = String.valueOf(job.get('id'));
             String status = String.valueOf(job.get('state'));
-            System.debug('HOVER Job ID: ' + hoverJobID);
-            aJob.HOVER_Job_ID__c = hoverJobId;
-            aJob.State__c = status;
-            update aJob;
+            if (Schema.sObjectType.HOVER4SF__HOVER_Job__c.isUpdateable()){
+            	System.debug('HOVER Job ID: ' + hoverJobID);
+            	aJob.HOVER_Job_ID__c = hoverJobId;
+            	aJob.State__c = status;
+            	update aJob;
+            	}
+           		 else{
+                    System.debug('HOVER_Job__c cannot be updated. Check user permissions and try again');
+                }
         }
         else {
             // anything beside a 201 is a problem - publish a platform event to inform
@@ -309,25 +322,30 @@ public class Hover {
         if(statusCode == 201) {
             responseBody = response.getBody();
             System.debug(responseBody);
+            if (Schema.sObjectType.HOVER4SF__HOVER_Job__c.isUpdateable()){
+                Map<String, Object> result = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
+                System.debug('After deserializing capture request response');
+                // Cast the values in the 'results' key as a list
+                String captureRequestID =  String.valueOf(result.get('id'));
+                String hoverJobID =  String.valueOf(result.get('pending_job_id'));
+                String status = String.valueOf(result.get('state'));
+                String connectIdentifier = String.valueOf(result.get('identifier'));
+    
+                System.debug('Capture Request ID: ' + captureRequestID);
+                System.debug('Pending Job ID: ' + hoverJobID);
+                System.debug('Status: ' + status);
+                aJob.HOVER_Job_ID__c = hoverJobId;
+                aJob.State__c = status;
+                aJob.Capture_Request_ID__c = captureRequestID;
+                aJob.Connect_Identifier__c = connectIdentifier;
+                aJob.Connect_Link__c = 'https://hover.to/api/v2/capture_requests/' + connectIdentifier;
+                
+                update aJob;
+            }
+            else {
+                System.debug('HOVER_Job__c cannot be updated. Check user permissions and try again');
+                }
             // Deserialize the JSON string into collections of primitive data types.
-            Map<String, Object> result = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
-            System.debug('After deserializing capture request response');
-            // Cast the values in the 'results' key as a list
-            String captureRequestID =  String.valueOf(result.get('id'));
-            String hoverJobID =  String.valueOf(result.get('pending_job_id'));
-            String status = String.valueOf(result.get('state'));
-            String connectIdentifier = String.valueOf(result.get('identifier'));
-
-            System.debug('Capture Request ID: ' + captureRequestID);
-            System.debug('Pending Job ID: ' + hoverJobID);
-            System.debug('Status: ' + status);
-            aJob.HOVER_Job_ID__c = hoverJobId;
-            aJob.State__c = status;
-            aJob.Capture_Request_ID__c = captureRequestID;
-            aJob.Connect_Identifier__c = connectIdentifier;
-            aJob.Connect_Link__c = 'https://hover.to/api/v2/capture_requests/' + connectIdentifier;
-            
-            update aJob;
         }
         else {
             // anything beside a 201 is a problem - publish a platform event to inform
@@ -458,7 +476,7 @@ public class Hover {
 
       
         try {
-            if (deliverableID == 2) { // Roof Only
+            if (deliverableID == 2 && Schema.sObjectType.HOVER4SF__HOVER_Job__c.isUpdateable()) { // Roof Only
                 HoverRoofMeasurements aRoofMeasurement = (HoverRoofMeasurements)JSON.deserialize(measurements, HoverRoofMeasurements.class);
                 aJob.Roof_Facets_Area__c = aRoofMeasurement.roof.roof_facets.area;
                 aJob.Roof_Facets_Length__c = aRoofMeasurement.roof.roof_facets.length;
@@ -491,7 +509,7 @@ public class Hover {
 
 
             }
-            else if (deliverableID == 3) { // complete
+            else if (deliverableID == 3 && Schema.sObjectType.HOVER4SF__HOVER_Job__c.isUpdateable()) { // complete
                 Map<String, Object> json = (Map<String, Object>) JSON.deserializeUntyped(measurements);
                 Map<String, Object> area = (Map<String,Object>) json.get('area');
                 
