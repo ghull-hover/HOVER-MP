@@ -370,8 +370,9 @@ public class Hover {
         String api = '/api/v2/jobs/' + jobID + '/measurements.pdf';
 		Blob measurementsBody;
 		HttpResponse response = Hover.executeGET(api, '');
-
-        if(response.getStatusCode() == 200) {
+		Schema.DescribeSObjectResult checkJobWritePermissions = HOVER4SF__HOVER_Job__c.sObjectType.getDescribe();
+     
+        if(response.getStatusCode() == 200 && checkJobWritePermissions.isCreateable()) {
             measurementsBody = response.getBodyAsBlob();
         }    
         else {
@@ -382,6 +383,7 @@ public class Hover {
             System.debug(message);
 
         }
+        
         ContentVersion conVer = new ContentVersion();
         conVer.ContentLocation = 'S'; // S specify this document is in SF, use E for external files
         conVer.PathOnClient = 'measurements-'+jobID +'.pdf'; // The files name, extension is very important here which will help the file in preview.
@@ -566,9 +568,10 @@ public class Hover {
         String api = '/api/v2/jobs/' + jobID + '/measurements.json?version=summarized_json';
 		String measurementsBody;
 		HttpResponse response = Hover.executeGET(api, '');
-
-        System.debug('after sending refresh request');
-        if(response.getStatusCode() == 200) {
+        
+        Schema.DescribeSObjectResult checkJobWritePermissions = HOVER4SF__HOVER_Job__c.sObjectType.getDescribe();
+     
+        if(response.getStatusCode() == 200 && checkJobWritePermissions.isCreateable()){
             measurementsBody = response.getBody();
             parseJSONMeasurements(measurementsBody, sfRecordID);
             
@@ -682,7 +685,7 @@ public class Hover {
         // If the request is successful, parse the JSON response.
         statusCode = response.getStatusCode();
         String responseBody;
-        if(statusCode == 201) {
+        if(statusCode == 201 && Schema.sObjectType.HOVER4SF__HOVER_Webhook__c.isUpdateable()) {
             responseBody = response.getBody();
             System.debug(responseBody);
             // Deserialize the JSON string into collections of primitive data types.
